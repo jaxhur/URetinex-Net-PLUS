@@ -170,7 +170,8 @@ if __name__ == "__main__":
     parser.add_argument('--freeze_decom', action="store_true")
     parser.add_argument('--second_stage', type=str, default="False")
     parser.add_argument('--concat_L', default=True, action='store_false')
-    parser.add_argument('--gpu_id', type=str, default=1)
+    # 未指定时遵从外部 CUDA_VISIBLE_DEVICES，避免将物理显卡编号写死。
+    parser.add_argument('--gpu_id', type=str, default=None)
     
     # dataset dir
     parser.add_argument('--patch_low', type=str, default="")
@@ -210,7 +211,8 @@ if __name__ == "__main__":
     parser.add_argument('--write_imgs', type=int, default=5)
     opts = parser.parse_args()
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = opts.gpu_id
+    if opts.gpu_id is not None:
+        os.environ['CUDA_VISIBLE_DEVICES'] = opts.gpu_id
 
     for k, v in vars(opts).items():
         print(k, v)

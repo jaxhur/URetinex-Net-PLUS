@@ -9,7 +9,6 @@ import torchvision
 from PIL import Image
 import numpy as np
 import time
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 def write_metric_to_file(method, metric_dicts, file_path):
     with open(file_path, 'a') as f:

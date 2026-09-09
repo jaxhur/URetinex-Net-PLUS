@@ -9,7 +9,6 @@ from data.preprocessing import InitailProcessing, Crop2Patch
 from utils import save_TensorImg, write_config, write_loss, write_config_to_file, write_imgs
 from model import DecomModel
 import argparse
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 def make_patch(batch, opts):
     patch_batch = {}
@@ -131,6 +130,8 @@ if __name__ == "__main__":
 
     # model config
     parser.add_argument('--init', type=str, default="normal")
+    # 未指定时遵从外部 CUDA_VISIBLE_DEVICES，避免将物理显卡编号写死。
+    parser.add_argument('--gpu_id', type=str, default=None)
 
     # checkpoints config
     parser.add_argument('--decom_model_dir', type=str, default="")
@@ -142,6 +143,8 @@ if __name__ == "__main__":
     for k, v in vars(opts).items():
         print(k, v)
 
+    if opts.gpu_id is not None:
+        os.environ['CUDA_VISIBLE_DEVICES'] = opts.gpu_id
     decom = DecomModel(opts).cuda()
     run(opts, model=decom)
     

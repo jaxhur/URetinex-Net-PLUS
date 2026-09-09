@@ -242,12 +242,16 @@ def create_kernel_y(opts):
 
 def load_param4Decom(model, decom_model_path):
     if os.path.exists(decom_model_path):
-        checkpoint_decom = torch.load(decom_model_path)
+        # 新版 PyTorch 默认限制包含 Namespace 的断点，显式保持旧断点兼容。
+        try:
+            checkpoint_decom = torch.load(decom_model_path, map_location="cpu", weights_only=False)
+        except TypeError:
+            checkpoint_decom = torch.load(decom_model_path, map_location="cpu")
         model.load_state_dict(checkpoint_decom['state_dict']['model_R'])
         print(" ******============>  loading pretrained Decomposition Low Model from: %s " % decom_model_path)
         # to freeze the params of Decomposition Model
         for param in model.parameters():
-            param.required_grad = False
+            param.requires_grad = False
 
         return model
     else:
@@ -259,7 +263,10 @@ def load_decom(fusion_opts):
         from network.decom import Decom
         model = Decom()
         if os.path.exists(path):
-            ckpt = torch.load(path)
+            try:
+                ckpt = torch.load(path, map_location="cpu", weights_only=False)
+            except TypeError:
+                ckpt = torch.load(path, map_location="cpu")
             model.load_state_dict(ckpt['state_dict']['model_R'])
             for param in model.parameters():
                 param.requires_grad = False
@@ -269,7 +276,7 @@ def load_decom(fusion_opts):
             exit()
         return model
     decom_low_model = create_and_load(fusion_opts.Decom_model_low_path)
-    if ("net_L" in fusion_opts and fusion_opts.net_L == True):
+    if getattr(fusion_opts, "net_L", False):
         decom_high_model = create_and_load(fusion_opts.Decom_model_high_path)
     else:
         decom_high_model = None
@@ -277,7 +284,10 @@ def load_decom(fusion_opts):
     
 def load_unfolding(opts):
     if os.path.exists(opts.pretrain_unfolding_model_path):
-        checkpoint = torch.load(opts.pretrain_unfolding_model_path)
+        try:
+            checkpoint = torch.load(opts.pretrain_unfolding_model_path, map_location="cpu", weights_only=False)
+        except TypeError:
+            checkpoint = torch.load(opts.pretrain_unfolding_model_path, map_location="cpu")
         old_opts = checkpoint["opts"]
         model_R = define_modelR(old_opts)
         model_L = define_modelL(old_opts)
@@ -294,13 +304,16 @@ def load_unfolding(opts):
 
 def load_AdjustFusion(opts):
     if os.path.exists(opts.fusion_model_A_path):
-        checkpoint = torch.load(opts.fusion_model_A_path)
+        try:
+            checkpoint = torch.load(opts.fusion_model_A_path, map_location="cpu", weights_only=False)
+        except TypeError:
+            checkpoint = torch.load(opts.fusion_model_A_path, map_location="cpu")
         AdjustFusion_opts = checkpoint["opts"]
         model_A = define_modelA(AdjustFusion_opts)
         model_A.load_state_dict(checkpoint['state_dict']['model_A'])
         for param_A in model_A.parameters():
             param_A.requires_grad = False
-        if "fusion_model" in AdjustFusion_opts:
+        if getattr(AdjustFusion_opts, "fusion_model", None) is not None:
             model_fusion = define_compositor(AdjustFusion_opts)
             if model_fusion is not None:
                 model_fusion.load_state_dict(checkpoint['state_dict']['model_compositor'])

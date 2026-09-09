@@ -204,7 +204,8 @@ if __name__ == "__main__":
     # print all the parameters
     for k, v in vars(opts).items():
         print(k, v)
-    os.environ['CUDA_VISIBLE_DEVICES'] = opts.gpu_id
+    # 未指定时遵从外部 CUDA_VISIBLE_DEVICES，避免 None 写入环境变量。
+    if opts.gpu_id is not None:
+        os.environ['CUDA_VISIBLE_DEVICES'] = opts.gpu_id
     model = AdjustModel(opts).cuda()
     run(opts, model=model)
-    

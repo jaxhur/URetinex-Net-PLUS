@@ -17,7 +17,6 @@ python unfolding_training.py --R_model 'HalfDnCNNSE' --gamma 0.5 \
                             --eval_low "/data/wengjian/low-light-enhancement/Ours/dataset/LOLdataset/eval15/low" \
                             --eval_high "/data/wengjian/low-light-enhancement/Ours/dataset/LOLdataset/eval15/high" \
                             --log_dir "./log/unfolding_training" \
-                            --gpu_id 1 \
                             --pretrain_unfolding_model_path ''
                             #--concat_L \ 
                             

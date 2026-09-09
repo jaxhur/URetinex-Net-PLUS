@@ -1,0 +1,7 @@
+# PyTorch / TorchVision / Torchaudio 请按 README 的 CUDA 12.8 命令单独安装。
+numpy>=1.24
+Pillow>=10.0
+opencv-python-headless>=4.8
+lpips>=0.1.4
+thop>=0.1.1
+tensorboard>=2.14

@@ -1,1 +1,4 @@
 __pycache__/
+# 训练断点、TensorBoard 日志与测试增强图均为可再生实验产物。
+experiments/
+test_result/

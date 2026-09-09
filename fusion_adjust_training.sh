@@ -5,7 +5,7 @@ python adjust_L_training.py --size 96 \
                             --A_model "naive" \
                             --fusion_layers 1 2 3\
                             --eval_epoch 1 \
-                            --gpu_id 3 --n_cpu 1\
+                            --n_cpu 1\
                             --adjust_L_loss "rec-grad-spatial" --l_grad 1 --l_spa 10  \
                             --saving_eval_dir "./eval_result/eval_adjustment" \
                             --adjust_model_dir "./model_ckpt/adjust/" \

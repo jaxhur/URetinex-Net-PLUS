@@ -67,13 +67,24 @@ class UnfoldingModel(nn.Module):
         self.model_Decom_high = load_param4Decom(self.model_Decom_high, self.opts.Decom_model_high_path)
         if self.opts.second_stage == "True":
             if os.path.exists(self.opts.pretrain_unfolding_model_path):
-                old_model = torch.load(self.opts.pretrain_unfolding_model_path)
+                # 新版 PyTorch 默认限制包含 Namespace 的断点，显式保持旧断点兼容。
+                try:
+                    old_model = torch.load(
+                        self.opts.pretrain_unfolding_model_path,
+                        map_location="cpu",
+                        weights_only=False,
+                    )
+                except TypeError:
+                    old_model = torch.load(
+                        self.opts.pretrain_unfolding_model_path,
+                        map_location="cpu",
+                    )
                 self.model_R.load_state_dict(old_model['state_dict']['model_R'])
                 self.model_L.load_state_dict(old_model['state_dict']['model_L'])
                 for paramR in self.model_R.parameters():
-                    paramR.required_grad = True
+                    paramR.requires_grad = True
                 for paramL in self.model_L.parameters():
-                    paramL.required_grad = True
+                    paramL.requires_grad = True
                 print("*******=====================> loaded unfolding old one_step_model %s"%self.opts.pretrain_unfolding_model_path)
             else:
                 print("pretrained unfolding does not exist, check ---> %s"%self.opts.pretrain_unfolding_model_path)
@@ -287,7 +298,8 @@ class AdjustModel(nn.Module):
             #assert ratio_mean > 0
             ratio_mean = max(ratio_mean, self.opts.min_ratio)
             assert ratio_mean >= self.opts.min_ratio
-            ratio_maps.append(torch.ones((1, c, w, h)).cuda() * ratio_mean)
+            # 跟随 low_l 所在设备创建 ratio，避免依赖默认 CUDA device。
+            ratio_maps.append(torch.ones_like(low_l[i : i + 1]) * ratio_mean)
         return torch.cat(ratio_maps, dim=0)
 
     def unfolding_inference(self, input_low_img):

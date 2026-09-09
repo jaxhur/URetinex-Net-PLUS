@@ -3,6 +3,22 @@ import torch.nn as nn
 from torchvision import models
 from collections import namedtuple
 
+
+def _load_vgg16_features():
+    """兼容 TorchVision 新旧权重 API 加载 VGG16 特征。"""
+    try:
+        return models.vgg16(weights=models.VGG16_Weights.IMAGENET1K_V1).features
+    except AttributeError:
+        return models.vgg16(pretrained=True).features
+
+
+def _load_vgg19_features():
+    """兼容 TorchVision 新旧权重 API 加载 VGG19 特征。"""
+    try:
+        return models.vgg19(weights=models.VGG19_Weights.IMAGENET1K_V1).features
+    except AttributeError:
+        return models.vgg19(pretrained=True).features
+
 def normalize_tensor(in_feat, eps=1e-10):
     norm_factor = torch.sqrt(torch.sum(in_feat ** 2, dim=1)).view(
         in_feat.size()[0], 1, in_feat.size()[2], in_feat.size()[3]
@@ -72,7 +88,7 @@ class PNet(nn.Module):
 class vgg16(torch.nn.Module):
     def __init__(self, requires_grad=False, pretrained=True):
         super(vgg16, self).__init__()
-        vgg_pretrained_features = models.vgg16(pretrained=pretrained).features
+        vgg_pretrained_features = _load_vgg16_features() if pretrained else models.vgg16(weights=None).features
         self.slice1 = torch.nn.Sequential()
         self.slice2 = torch.nn.Sequential()
         self.slice3 = torch.nn.Sequential()
@@ -116,7 +132,7 @@ class vgg16(torch.nn.Module):
 class VGG19(nn.Module):
     def __init__(self):
         super().__init__()
-        vgg_pretrained_features = models.vgg19(pretrained=True).features
+        vgg_pretrained_features = _load_vgg19_features()
         self.slice1 = torch.nn.Sequential()
         self.slice2 = torch.nn.Sequential()
         self.slice3 = torch.nn.Sequential()
@@ -135,7 +151,7 @@ class VGG19(nn.Module):
             self.slice5.add_module(str(x), vgg_pretrained_features[x])
         
         for param in self.parameters():
-            param.required_grad = False
+            param.requires_grad = False
         
 
     def forward(self, x):

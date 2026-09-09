@@ -82,10 +82,11 @@ class Inference(nn.Module):
         ratio_maps = []
         for i in range(bs):
             ratio_mean = (high_l[i, :, :, :] / (low_l[i, :, :, :]+0.0001)).mean()
-            if "min_ratio" in self.fusion_opts:
+            if getattr(self.fusion_opts, "min_ratio", None) is not None:
                 ratio_mean = max(ratio_mean, self.fusion_opts.min_ratio)
                 assert ratio_mean >= self.fusion_opts.min_ratio
-            ratio_maps.append(torch.ones((1, c, w, h)).cuda() * ratio_mean)
+            # 跟随低照 illumination 所在设备创建 ratio，避免依赖默认 CUDA device。
+            ratio_maps.append(torch.ones_like(low_l[i : i + 1]) * ratio_mean)
         return torch.cat(ratio_maps, dim=0)
     
     def make_high_L(self, input_high_img):
@@ -99,7 +100,7 @@ class Inference(nn.Module):
     
     def ratio_maker(self, L, input_high_img):
         if input_high_img is None:
-            ratio = torch.ones(L.shape).cuda() * self.opts.ratio
+            ratio = torch.ones_like(L) * self.opts.ratio
         else:
             _, Q_high = self.make_high_L(input_high_img)
             ratio = self.get_ratio(high_l=Q_high, low_l=L)
@@ -242,7 +243,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Configure')
     parser.add_argument('--real_high', type=str, default="./evaluate_data/real_high")
     parser.add_argument('--low_dir', type=str, default="./evaluate_data/low-source")
-    parser.add_argument('--gpu_id', type=str, default="4")
+    parser.add_argument('--gpu_id', type=str, default=None)
     parser.add_argument('--loop_time_for_img', type=int, default=1)
     parser.add_argument('--alg_name', type=str, default="URetinex-Net++")
     parser.add_argument('--ratio', type=float, default=None)
@@ -261,7 +262,9 @@ if __name__ == "__main__":
     for k, v in vars(opts).items():
         print(k, v)
     
-    os.environ['CUDA_VISIBLE_DEVICES'] = opts.gpu_id
+    # 未指定时遵从外部 CUDA_VISIBLE_DEVICES，避免把设备编号写死。
+    if opts.gpu_id is not None:
+        os.environ['CUDA_VISIBLE_DEVICES'] = opts.gpu_id
     model = Inference(opts).cuda()
     model.run_and_evaluate(evaluate=opts.evaluate)
     #model.run_one_image("/data/wengjian/low-light-enhancement/pami/evaluate_data/low-source/LIME/9.png", 
