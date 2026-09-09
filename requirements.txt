@@ -2,6 +2,7 @@
 numpy>=1.24
 Pillow>=10.0
 opencv-python-headless>=4.8
+scikit-image>=0.21
 lpips>=0.1.4
 thop>=0.1.1
 tensorboard>=2.14
