@@ -85,8 +85,8 @@ cd ../
 
 
 ```bash
-bash run_reproduction.sh --dataset lol-v1 --data-root datasets --experiment uretinex_lolv1 --gpu 0 --parallel-decom --num-workers 4;\
-bash run_reproduction.sh --dataset lol-v2-real --data-root datasets --experiment uretinex_lolv2real --gpu 0 --parallel-decom --num-workers 4;\
+bash run_reproduction.sh --dataset lol-v1 --data-root data --experiment uretinex_lolv1 --gpu 0 --parallel-decom --num-workers 4;\
+bash run_reproduction.sh --dataset lol-v2-real --data-root data --experiment uretinex_lolv2real --gpu 0 --parallel-decom --num-workers 4;\
 bash run_reproduction.sh --dataset lol-v2-syn --data-root datasets --experiment uretinex_lolv2syn --gpu 0 --parallel-decom --num-workers 4
 ```
 

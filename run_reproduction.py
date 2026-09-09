@@ -395,7 +395,8 @@ def _format_train_message(args, epoch, step, steps_per_epoch, global_iter, total
     )
     eta = elapsed / max(global_iter, 1) * max(total_iter - global_iter, 0)
     return (
-        f"[{args.experiment}][TRAIN] [progress: epoch={epoch + 1}/{args.epochs}, "
+        f"[{args.experiment}][TRAIN] [stage: {args.stage}] "
+        f"[progress: epoch={epoch + 1}/{args.epochs}, "
         f"iter={global_iter:,}/{total_iter:,}, step={step}/{steps_per_epoch}] "
         f"[time: elapsed={format_duration(elapsed)}, eta={format_duration(eta)}] "
         f"[optim: lr={learning_rate:.3e}] [total_loss: {total_loss:.6f}] "
